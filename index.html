@@ -2,11 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>3Dmol Ball-and-Stick with Labels</title>
+  <title>3Dmol Custom Viewer with Labels</title>
   <script src="https://3dmol.org/build/3Dmol-min.js"></script>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; }
-    #viewer { width: 100%; height: 100%; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    #viewer {
+      width: 100%;
+      height: 100%;
+    }
   </style>
 </head>
 <body>
@@ -16,48 +23,44 @@
       backgroundColor: "white"
     });
 
-    $3Dmol.download("cid:439938", viewer, {}, function () {
-      viewer.setStyle({}, {
+    const elementColours = {
+  C: "#363636",
+  O: "#FF3838",
+  N: "#7070FF",
+  H: "#FFFFFF",
+  S: "goldenrod",
+  F: "#00CC99",
+  Cl: "#66CC00"
+    };
+
+    $3Dmol.download("cid:439938", viewer, { noAutoStyle: true }, function() {
+      const model = viewer.getModel();
+      model.setStyle({}, {
         stick: {
           radius: 0.15,
-          colorscheme: {
-             C: "363636",
-            O: "FF3838",
-            N: "7070FF",
-            H: "white",
-            S: "yellow",
-            default: "teal"
-          }
+          colorfunc: atom => elementColours[atom.elem] || "teal"
         },
         sphere: {
           radius: 0.3,
-          colorscheme: {
-            C: "black",
-            O: "red",
-            N: "#4747FF",
-            H: "white",
-            S: "yellow",
-            default: "teal"
-          }
+          colorfunc: atom => elementColours[atom.elem] || "teal"
         }
       });
 
       viewer.zoomTo();
       viewer.render();
 
-      // Add labels only to non-hydrogen atoms with valid positions
-      const atoms = viewer.selectedAtoms({});
+      // Now safely access atoms for labelling
+      const atoms = model.selectedAtoms({});
       atoms.forEach(atom => {
-        if (atom.elem !== 'H' && atom.x != null && atom.y != null && atom.z != null) {
+        if (atom.elem !== 'H') {
           viewer.addLabel(atom.elem, {
-            position: {x: atom.x, y: atom.y, z: atom.z},
+            position: atom,
             backgroundColor: "white",
             backgroundOpacity: 0.7,
             fontColor: "black",
             fontSize: 12,
-            inFront: false,
             showBackground: true,
-            alignment: 'center'
+            alignment: "center"
           });
         }
       });
